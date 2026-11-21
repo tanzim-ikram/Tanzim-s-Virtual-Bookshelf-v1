@@ -1,4 +1,6 @@
 import os
+import re
+import unicodedata
 import requests
 from flask import Flask, render_template, redirect, url_for, request, flash, jsonify, current_app
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
@@ -16,6 +18,55 @@ db = SQLAlchemy(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+# Book cover images are stored as files in static/img/covers/, named after the book title
+COVERS_DIR = os.path.join(app.static_folder, 'img', 'covers')
+ALLOWED_COVER_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp', '.gif'}
+_cover_index = None  # Cache of {slug: filename}, built on first use
+
+
+def slugify(text):
+    # Keeps letters/digits of any script (e.g. Bengali) and combining marks; everything else
+    # (spaces, punctuation, apostrophes, zero-width joiners) becomes a single "-".
+    text = unicodedata.normalize('NFC', (text or '').lower()).replace("'", '').replace('’', '')
+    kept = ''.join(ch if unicodedata.category(ch)[0] in 'LMN' else '-' for ch in text)
+    return re.sub(r'-+', '-', kept).strip('-')
+
+
+def refresh_cover_index():
+    global _cover_index
+    _cover_index = {}
+    if os.path.isdir(COVERS_DIR):
+        for filename in os.listdir(COVERS_DIR):
+            stem, ext = os.path.splitext(filename)
+            if ext.lower() in ALLOWED_COVER_EXTENSIONS:
+                _cover_index[slugify(stem)] = filename
+    return _cover_index
+
+
+def find_local_cover(title):
+    index = _cover_index if _cover_index is not None else refresh_cover_index()
+    return index.get(slugify(title))
+
+
+def save_cover_upload(file_storage, title):
+    """Save an uploaded cover as static/img/covers/<slug-of-title>.<ext>. Returns True if saved."""
+    if not file_storage or not file_storage.filename:
+        return False
+    ext = os.path.splitext(file_storage.filename)[1].lower()
+    if ext not in ALLOWED_COVER_EXTENSIONS:
+        return False
+    slug = slugify(title)
+    if not slug:
+        return False
+    os.makedirs(COVERS_DIR, exist_ok=True)
+    # Remove an older cover for the same book (possibly with a different extension or name)
+    old = find_local_cover(title)
+    if old:
+        os.remove(os.path.join(COVERS_DIR, old))
+    file_storage.save(os.path.join(COVERS_DIR, slug + ext))
+    refresh_cover_index()
+    return True
 
 
 # Function to fetch data from Sheety API and add new books to the database
@@ -111,6 +162,14 @@ class Book(db.Model):
     review = db.Column(db.String(1000), nullable=True)
     img_url = db.Column(db.String(250), nullable=True)
 
+    @property
+    def cover_src(self):
+        # Prefer a self-hosted cover in static/img/covers/, fall back to the external URL
+        filename = find_local_cover(self.title)
+        if filename:
+            return url_for('static', filename=f'img/covers/{filename}')
+        return self.img_url
+
     def serialize(self):
         return {
             'title': self.title,
@@ -120,7 +179,8 @@ class Book(db.Model):
             'page_num': self.page_num,
             'read_unread': self.read_unread,
             'review': self.review,
-            'img_url': self.img_url
+            'img_url': self.img_url,
+            'cover_src': self.cover_src
         }
 
     def __repr__(self):
@@ -256,6 +316,7 @@ def add_book():
         )
         db.session.add(new_book)
         db.session.commit()
+        save_cover_upload(request.files.get("cover"), title)
         return jsonify({"status": "success", "message": "Book added successfully!"})
 
     unique_genres = get_unique_genres()
@@ -283,6 +344,7 @@ def update_book_info():
         read_unread = request.form.get("read_unread")
         review = request.form.get("review")
         img_url = request.form.get("img_url")
+        old_title = book_selected.title
 
         if title:
             book_selected.title = title
@@ -301,6 +363,23 @@ def update_book_info():
             book_selected.review = review
         if img_url:
             book_selected.img_url = img_url
+
+        cover_file = request.files.get("cover")
+        if title and cover_file and cover_file.filename:
+            # Title changed: drop the cover saved under the old title so it isn't orphaned
+            old_cover = find_local_cover(old_title)
+            if old_cover and slugify(old_title) != slugify(title):
+                os.remove(os.path.join(COVERS_DIR, old_cover))
+                refresh_cover_index()
+        elif title and slugify(old_title) != slugify(title):
+            # Title changed without a new upload: rename the existing cover to follow the book
+            old_cover = find_local_cover(old_title)
+            if old_cover and not find_local_cover(title):
+                ext = os.path.splitext(old_cover)[1]
+                os.rename(os.path.join(COVERS_DIR, old_cover),
+                          os.path.join(COVERS_DIR, slugify(title) + ext))
+                refresh_cover_index()
+        save_cover_upload(cover_file, book_selected.title)
 
         db.session.commit()
         # Return a JSON response indicating success

@@ -14,7 +14,7 @@
                         <br><br><br>
                         <h2 id="add-book-heading">Update Book Info</h2>
                         <div class="form-container">
-                            <form id="updateBookForm" method="post" novalidate>
+                            <form id="updateBookForm" method="post" enctype="multipart/form-data" novalidate>
                                 <!-- Include CSRF token -->
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <!-- Title -->
@@ -94,6 +94,11 @@
                                     <label class="bold-label" for="img_url">Image URL</label>
                                     <input type="text" class="form-control" id="img_url" name="img_url"
                                         value="{{ book.img_url }}">
+                                </div>
+                                <!-- Cover image upload -->
+                                <div class="form-group">
+                                    <label class="bold-label" for="cover">Cover Image (upload)</label>
+                                    <input type="file" class="form-control-file" id="cover" name="cover" accept="image/*">
                                 </div>
                                 <br>
                                 <!-- Form Submit Button -->
