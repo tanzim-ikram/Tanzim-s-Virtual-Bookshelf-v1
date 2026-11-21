@@ -33,8 +33,8 @@
                                     <label class="bold-label">Genre <span class="mandatory">*</span></label><br>
                                     {% for genre in unique_genres %}
                                     <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="checkbox" id="{{ genre }}" name="genre" value="{{ genre }}">
-                                        <label class="form-check-label" for="{{ genre }}">{{ genre }}</label>
+                                        <input class="form-check-input" type="checkbox" id="genre-{{ loop.index }}" name="genre" value="{{ genre }}">
+                                        <label class="form-check-label" for="genre-{{ loop.index }}">{{ genre }}</label>
                                     </div>
                                     {% endfor %}
                                     <br>
@@ -49,7 +49,7 @@
                                 <div class="form-group">
                                     <label class="bold-label" id="language">Language <span class="mandatory">*</span></label><br>
                                     <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" id="bangla" name="language" value="Bangla"
+                                        <input class="form-check-input" type="radio" id="bangla" name="language" value="Bengali"
                                             required>
                                         <label class="form-check-label" for="bangla">Bangla</label>
                                     </div>
@@ -146,7 +146,10 @@
                     alert(data.message); // Show error message
                 }
             })
-            .catch(error => console.error("Error:", error)); // Log any errors
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Something went wrong. Please try again.");
+            });
         });
     </script> 
 

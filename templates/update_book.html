@@ -35,11 +35,15 @@
                                 <td>{{ book.language }}</td>
                                 <td>{{ book.page_num }}</td>
                                 <td>{{ book.read_unread }}</td>
-                                <td><a href="#">Read Review</a></td>
+                                <td><a href="{{ url_for('book_review', id=book.id) }}">Read Review</a></td>
                                 <td>
                                     <a id="update-btn" class="button" href="{{ url_for('update_book_info', id=book.id) }}">Update</a>
                                     <br>
-                                    <a id="delete-btn" class="button delete-button" href="{{ url_for('delete_book', id=book.id) }}">Delete</a>
+                                    <form method="post" action="{{ url_for('delete_book', id=book.id) }}" class="delete-form"
+                                  onsubmit="return confirm({{ ('Delete ' ~ book.title ~ '?')|tojson }});">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="delete-button">Delete</button>
+                            </form>
                                 </td>
                             </tr>
                             {% endfor %}

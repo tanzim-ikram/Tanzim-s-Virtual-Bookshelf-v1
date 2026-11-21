@@ -67,6 +67,16 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Export Books Card -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Export All Books</h5>
+                                <a class="btn btn-outline-success btn-sm" href="{{ url_for('export_csv') }}">CSV</a>
+                                <a class="btn btn-outline-success btn-sm" href="{{ url_for('export_xlsx') }}">Excel</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </main>
         </div>

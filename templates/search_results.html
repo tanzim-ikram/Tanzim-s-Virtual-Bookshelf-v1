@@ -36,8 +36,12 @@
                             </div>
                             {% if current_user.is_authenticated %}
                             <div class="text-center">
-                                <a id="update-btn" class="button" href="#">Update</a>
-                                <a id="delete-btn" class="button delete-button" href="#">Delete</a>
+                                <a id="update-btn" class="button" href="{{ url_for('update_book_info', id=book.id) }}">Update</a>
+                                <form method="post" action="{{ url_for('delete', id=book.id) }}" class="delete-form"
+                                  onsubmit="return confirm({{ ('Delete ' ~ book.title ~ '?')|tojson }});">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="delete-button">Delete</button>
+                            </form>
                             </div>
                             {% endif %}
                         </div>

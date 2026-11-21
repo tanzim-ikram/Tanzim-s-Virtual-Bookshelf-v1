@@ -36,29 +36,30 @@
                                     <label class="bold-label">Genre</label><br>
                                     {% for genre in unique_genres %}
                                     <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="checkbox" id="{{ genre }}" name="genre"
-                                            value="{{ genre }}">
-                                        <label class="form-check-label" for="{{ genre }}">{{ genre }}</label>
+                                        <input class="form-check-input" type="checkbox" id="genre-{{ loop.index }}" name="genre"
+                                            value="{{ genre }}" {% if genre|lower in selected_genres %}checked{% endif %}>
+                                        <label class="form-check-label" for="genre-{{ loop.index }}">{{ genre }}</label>
                                     </div>
                                     {% endfor %}
                                     <!-- Add more genre checkboxes as needed -->
                                 </div>
                                 <!-- Language -->
                                 <div class="form-group">
+                                    {% set lang = 'Bengali' if book.language == 'Bangla' else (book.language or '') %}
                                     <label class="bold-label" for="language">Language</label><br>
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" type="radio" id="bangla" name="language"
-                                            value="Bangla" required>
+                                            value="Bengali" required {% if lang == 'Bengali' %}checked{% endif %}>
                                         <label class="form-check-label" for="bangla">Bangla</label>
                                     </div>
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" type="radio" id="english" name="language"
-                                            value="English" required>
+                                            value="English" required {% if lang == 'English' %}checked{% endif %}>
                                         <label class="form-check-label" for="english">English</label>
                                     </div>
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" type="radio" id="other_language" name="language"
-                                            value="Other" required>
+                                            value="Other" required {% if lang and lang not in ('Bengali', 'English') %}checked{% endif %}>
                                         <label class="form-check-label" for="other_language">Other</label>
                                     </div>
                                     <!-- Add more language radio inputs as needed -->
@@ -68,19 +69,19 @@
                                     <label class="bold-label" for="page_num">Page Number <span
                                             id="mendatory">*</span></label>
                                     <input type="number" class="form-control" id="page_num" name="page_num"
-                                        value="{{ book.page_num }}" required>
+                                        value="{{ book.page_num or '' }}" required>
                                 </div>
                                 <!-- Read/ Unread -->
                                 <div class="form-group">
                                     <label class="bold-label" for="read_unread">Read/ Unread?</label><br>
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" type="radio" id="read" name="read_unread"
-                                            value="Yes" required>
+                                            value="Yes" required {% if book.read_unread == 'Yes' %}checked{% endif %}>
                                         <label class="form-check-label" for="read">Yes</label>
                                     </div>
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" type="radio" id="unread" name="read_unread"
-                                            value="No" required>
+                                            value="No" required {% if book.read_unread == 'No' %}checked{% endif %}>
                                         <label class="form-check-label" for="unread">No</label>
                                     </div>
                                 </div>
@@ -130,7 +131,10 @@
                     alert(data.message); // Show error message
                 }
             })
-            .catch(error => console.error("Error:", error)); // Log any errors
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Something went wrong. Please try again.");
+            });
         });
     </script>
 

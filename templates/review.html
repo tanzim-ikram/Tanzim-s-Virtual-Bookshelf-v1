@@ -3,7 +3,7 @@
     <div class="container">
         <div class="book-review">
             <div class="book-image">
-                <img src="{{ book.cover_src }}" alt="Book Cover">
+                {% if book.cover_src %}<img src="{{ book.cover_src }}" alt="Book Cover">{% endif %}
                 <div class="book-details">
                     <p><strong>Genres: </strong> {{ book.genre }}</p>
                     <p><strong>Page Number: </strong> {% if book.page_num %} {{ book.page_num }} {% else %} N/A {% endif %}</p>

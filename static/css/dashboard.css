@@ -273,3 +273,24 @@ td {
 .footer {
   border-top: 1px solid #aaaaaa;
 }
+
+/* Delete buttons are real <button>s inside POST forms (deleting must not be a GET link) */
+form.delete-form {
+  display: inline;
+  margin: 0;
+}
+
+button.delete-button {
+  background-color: #f44336;
+  color: white;
+  padding: 5px 13px;
+  border: 0;
+  border-radius: 0.35rem;
+  margin: 0 0 5px 5px;
+  cursor: pointer;
+  font: inherit;
+}
+
+button.delete-button:hover {
+  background-color: red;
+}
