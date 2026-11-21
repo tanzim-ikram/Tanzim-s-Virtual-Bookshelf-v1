@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Page not found · Tanzim's Virtual Bookshelf{% endblock %}
+
+{% block content %}
+<div class="wrap notfound">
+  <p class="big">404</p>
+  <h1>This page isn't on the shelf</h1>
+  <p class="muted">The link may be broken, or the book may have been removed.</p>
+  <a class="btn" href="{{ url_for('home') }}">Back to the shelf</a>
+</div>
+{% endblock %}

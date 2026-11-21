@@ -101,15 +101,15 @@ def split_genres(genre_text):
 
 
 def get_unique_genres():
-    genre_set = set()  # Use a set to store unique genres
+    unique = {}  # lower-case name -> the first spelling seen, so "Self-help" and "self-help" are one genre
 
     for book in Book.query.all():
-        # Convert each genre to title case and add to the set
         for genre in split_genres(book.genre):
-            genre_set.add(genre.title())
+            # Capitalise only the first letter; str.title() would turn "Children's" into "Children'S"
+            unique.setdefault(genre.lower(), genre[:1].upper() + genre[1:])
 
     # Sorted list for a consistent order
-    return sorted(genre_set)
+    return [unique[key] for key in sorted(unique)]
 
 
 def title_taken(title, exclude_id=None):
@@ -300,18 +300,29 @@ def search():
 @login_required
 def dashboard():
     all_books = Book.query.order_by(Book.id.asc()).all()
-    current_username = current_user.username
-    return render_template("dashboard.html", books=all_books, username=current_username,
-                           logged_in=current_user.is_authenticated)
+    total = len(all_books)
+    read = sum(1 for b in all_books if b.read_unread == 'Yes')
+    stats = {
+        'books': total,
+        'authors': len({b.author_name.strip().lower() for b in all_books}),
+        # Count individual genres ("Novel, Fiction" counts as two), not genre combinations
+        'genres': len({g.lower() for b in all_books for g in b.genre_list}),
+        'languages': len({(b.language or '').strip() for b in all_books if b.language}),
+        'read': read,
+        'unread': sum(1 for b in all_books if b.read_unread == 'No'),
+        'pages': sum(b.page_num or 0 for b in all_books),
+        'read_percent': round(read * 100 / total) if total else 0,
+    }
+    recent_books = list(reversed(all_books[-5:]))
+    return render_template("dashboard.html", stats=stats, recent_books=recent_books,
+                           username=current_user.username)
 
 
 @app.route('/view_all_books')
 @login_required
 def view_all_books():
-    current_username = current_user.username
-    all_books = Book.query.order_by(Book.id.asc()).all()
-    return render_template("view_all_books.html", books=all_books, username=current_username,
-                           logged_in=current_user.is_authenticated)
+    # The read-only list and the manage list were merged into one page
+    return redirect(url_for('update_book'))
 
 
 def export_rows():
@@ -382,12 +393,11 @@ def add_book():
         review = (request.form.get("review") or "").strip()
         img_url = (request.form.get("img_url") or "").strip()
 
-        # Check if custom genre is provided, if yes, use it instead of genre checkboxes
-        if custom_genre:
-            genre = [custom_genre]
-        elif not genre:
-            # If no custom genre, ensure at least one genre is selected
-            return error_response("Please select at least one genre")
+        # A custom genre is added to the ticked ones (unless it is already ticked)
+        if custom_genre and custom_genre.lower() not in {g.lower() for g in genre}:
+            genre.append(custom_genre)
+        if not genre:
+            return error_response("Please choose at least one genre")
 
         # Perform validation
         if not all([title, author_name, page_num, language, read_unread]):
@@ -420,7 +430,9 @@ def add_book():
         cover_file = request.files.get("cover")
         if cover_file and cover_file.filename and not save_cover_upload(cover_file, title):
             message += " (The cover image was not saved: use a .jpg, .png, .webp or .gif file.)"
-        return jsonify({"status": "success", "message": message})
+        flash(message)
+        return jsonify({"status": "success", "message": message,
+                        "redirect": url_for('book_review', id=new_book.id)})
 
     unique_genres = get_unique_genres()
 
@@ -439,6 +451,9 @@ def update_book_info():
         title = (request.form.get("title") or "").strip()
         author_name = (request.form.get("author_name") or "").strip()
         genre = [g.strip() for g in request.form.getlist("genre") if g.strip()]
+        custom_genre = (request.form.get("custom_genre") or "").strip()
+        if custom_genre and custom_genre.lower() not in {g.lower() for g in genre}:
+            genre.append(custom_genre)
         language = (request.form.get("language") or "").strip()
         page_num = request.form.get("page_num")
         read_unread = request.form.get("read_unread")
@@ -500,8 +515,9 @@ def update_book_info():
             message += " (The cover file could not be updated.)"
         refresh_cover_index()
 
-        # Return a JSON response indicating success
-        return jsonify({"status": "success", "message": message})
+        flash(message)
+        return jsonify({"status": "success", "message": message,
+                        "redirect": url_for('book_review', id=book_selected.id)})
 
     unique_genres = get_unique_genres()
     return render_template("update_book_info.html", book=book_selected,
@@ -526,6 +542,7 @@ def delete():
     book_to_delete = get_book_or_404()
     db.session.delete(book_to_delete)
     db.session.commit()
+    flash(f"Deleted “{book_to_delete.title}”.")
     return redirect(url_for("home"))
 
 
@@ -535,7 +552,18 @@ def delete_book():
     book_to_delete = get_book_or_404()
     db.session.delete(book_to_delete)
     db.session.commit()
+    flash(f"Deleted “{book_to_delete.title}”.")
     return redirect(url_for("update_book"))
+
+
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template("404.html"), 404
+
+
+@app.context_processor
+def inject_globals():
+    return {"current_year": date.today().year}
 
 
 @app.route('/logout')

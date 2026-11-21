@@ -1,33 +1,49 @@
-{% include "header.html" %} 
+{% extends "base.html" %}
+{% from "_macros.html" import delete_form %}
 
-    <div class="container">
-        <div class="book-review">
-            <div class="book-image">
-                {% if book.cover_src %}<img src="{{ book.cover_src }}" alt="Book Cover">{% endif %}
-                <div class="book-details">
-                    <p><strong>Genres: </strong> {{ book.genre }}</p>
-                    <p><strong>Page Number: </strong> {% if book.page_num %} {{ book.page_num }} {% else %} N/A {% endif %}</p>
-                    <p><strong>Language: </strong> {{ book.language }}</p>
-                </div>
-            </div>
-            <div class="book-content">
-                <h3 style="font-weight: 700;">{{ book.title}} by <em>{{ book.author_name }}</em></h3>
-                {% if book.review %}
-                    <p>
-                        {{ book.review }}
-                    </p>
-                {% else %}
-                    <p>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                    </p>
-                {% endif %}
-            </div>
-        </div>
+{% block title %}{{ book.title }} · Tanzim's Virtual Bookshelf{% endblock %}
+
+{% block content %}
+<div class="wrap">
+  <a class="back-link" href="{{ url_for('home') }}">&larr; Back to the shelf</a>
+
+  <div class="book-layout">
+    <div class="book-cover">
+      {% if book.cover_src %}
+      <img src="{{ book.cover_src }}" alt="Cover of {{ book.title }}">
+      {% else %}
+      <span class="placeholder">{{ book.title }}</span>
+      {% endif %}
     </div>
 
-    <!-- Footer -->
-    {% include "footer.html" %}
+    <div class="book-info">
+      <h1>{{ book.title }}</h1>
+      <p class="author">by {{ book.author_name }}</p>
 
-</body>
+      <div class="genres">
+        {% for genre in book.genre_list %}<span class="badge off">{{ genre }}</span>{% endfor %}
+      </div>
 
-</html>
+      <dl class="facts-grid">
+        <div><dt>Language</dt><dd>{{ book.language or '—' }}</dd></div>
+        <div><dt>Pages</dt><dd>{{ book.page_num or '—' }}</dd></div>
+        <div><dt>Status</dt><dd>{% if book.read_unread == 'Yes' %}Read{% elif book.read_unread == 'No' %}Not read yet{% else %}—{% endif %}</dd></div>
+      </dl>
+
+      <h2>Review</h2>
+      {% if book.review %}
+      <p class="review">{{ book.review }}</p>
+      {% else %}
+      <p class="muted">No review yet.</p>
+      {% endif %}
+
+      {% if current_user.is_authenticated %}
+      <div class="book-actions">
+        <a class="btn" href="{{ url_for('update_book_info', id=book.id) }}">Edit book</a>
+        {{ delete_form(book, 'delete', 'Delete', 'btn danger') }}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

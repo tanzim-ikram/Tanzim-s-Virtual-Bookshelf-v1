@@ -1,83 +1,29 @@
-{% include "header.html" %}
-    <!-- Search results container -->
-    <div id="searchResults" class="container">
-        <h2 id="search-heading">Search Results for "{{ query }}"</h2>
-        <div class="row justify-content-center">
-            {% for book in books %}
-            <div class="col-lg-3 col-md-5 col-sm-1">
-                <div class="card">
-                    {% if book.cover_src %}
-                    <div class="front" style="background-image: url('{{ book.cover_src }}');"></div>
-                    {% else %}
-                    <div>
-                        <p class="front large">Null</p>
-                    </div>
-                    {% endif %}
-                    <div class="back">
-                        <div>
-                            <div class="title">
-                                <p>Title: {{book.title}}</p>
-                            </div>
-                            <div class="author">
-                                <p>Author: {{book.author_name}}</p>
-                            </div>
-                            <div class="genre">
-                                <p>Genre: {{book.genre}}</p>
-                            </div>
-                            <div class="language">
-                                <p>Language: {{book.language}}</p>
-                            </div>
-                            <div class="page">
-                                <p>Pages: {{book.page_num}}</p>
-                            </div>
-                            <br>
-                            <div class="text-center">
-                                <a id="review-btn" class="button" href="{{ url_for('book_review', id=book.id) }}">Read Review</a>
-                            </div>
-                            {% if current_user.is_authenticated %}
-                            <div class="text-center">
-                                <a id="update-btn" class="button" href="{{ url_for('update_book_info', id=book.id) }}">Update</a>
-                                <form method="post" action="{{ url_for('delete', id=book.id) }}" class="delete-form"
-                                  onsubmit="return confirm({{ ('Delete ' ~ book.title ~ '?')|tojson }});">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="delete-button">Delete</button>
-                            </form>
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
+{% extends "base.html" %}
 
-    <script>
-        $(document).ready(function () {
-            $('#searchButton').click(function () {
-                // Get the search query from the input field
-                var query = $('#searchInput').val();
-    
-                // Perform AJAX request to Flask endpoint
-                $.ajax({
-                    url: '/search', // Send the request to the /search endpoint
-                    type: 'GET', // Use the GET method
-                    data: {query: query},
-                    success: function (response) {
-                        // Redirect to the search results page
-                        window.location.href = '/search?query=' + encodeURIComponent(query);
-                    },
-                    error: function (xhr, status, error) {
-                        console.error('Error:', error);
-                    }
-                });
-            });
-        });
-    </script>
+{% block title %}{% if query %}“{{ query }}” · {% endif %}Search · Tanzim's Virtual Bookshelf{% endblock %}
 
-    <!-- Footer -->
-    {% include "footer.html" %}
+{% block content %}
+<section class="wrap hero">
+  <p class="eyebrow">Search</p>
+  {% if query %}
+  <h1>{{ books|length }} result{{ '' if books|length == 1 else 's' }} for “{{ query }}”</h1>
+  {% else %}
+  <h1>All books</h1>
+  {% endif %}
+</section>
 
-</body>
-
-</html>
+<section class="wrap">
+  {% if books %}
+  <div class="grid">
+    {% for book in books %}
+      {% include "_book_card.html" %}
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty">
+    <p>No book matches “{{ query }}”. Try a shorter title.</p>
+    <a class="btn quiet" href="{{ url_for('home') }}">Back to the shelf</a>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

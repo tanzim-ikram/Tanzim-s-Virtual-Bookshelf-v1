@@ -1,0 +1,39 @@
+{% from "_macros.html" import delete_form %}
+{# One book on the shelf: the cover on the front, details on the back. Needs `book`. #}
+<article class="book" data-read="{{ (book.read_unread or '')|lower }}" data-lang="{{ (book.language or '')|lower }}">
+  <div class="scene">
+    <div class="flip">
+      <button type="button" class="face front flip-toggle" aria-label="Show details for {{ book.title }}">
+        {% if book.cover_src %}
+        <img src="{{ book.cover_src }}" alt="Cover of {{ book.title }}" loading="lazy">
+        {% else %}
+        <span class="placeholder">{{ book.title }}</span>
+        {% endif %}
+        {% if book.read_unread == 'Yes' %}<span class="tick" title="Read" aria-hidden="true">&#10003;</span>{% endif %}
+      </button>
+
+      <div class="face back">
+        <button type="button" class="flip-close" aria-label="Back to cover">&times;</button>
+        <h3>{{ book.title }}</h3>
+        <p class="by">{{ book.author_name }}</p>
+        <p class="genres">{{ book.genre }}</p>
+        <p class="facts">
+          {{ book.language or '' }}{% if book.page_num %} · {{ book.page_num }} pages{% endif %}
+        </p>
+        <p class="facts">{% if book.read_unread == 'Yes' %}<span class="badge">Read</span>{% else %}<span class="badge off">Not read yet</span>{% endif %}</p>
+        <div class="actions">
+          <a class="btn small" href="{{ url_for('book_review', id=book.id) }}">Review</a>
+          {% if current_user.is_authenticated %}
+          <a class="btn small quiet" href="{{ url_for('update_book_info', id=book.id) }}">Edit</a>
+          {{ delete_form(book, 'delete') }}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="meta">
+    <h3>{{ book.title }}</h3>
+    <p>{{ book.author_name }}</p>
+  </div>
+</article>

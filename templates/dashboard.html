@@ -1,90 +1,51 @@
-{% include "dashboard_header.html" %}
+{% extends "admin_base.html" %}
 
-    <!-- Sidebar -->
-    <div class="container-fluid">
-        <div class="row">
-            
-            <!-- Sidebar Options -->
-            {% include "sidebar.html" %}
+{% block title %}Dashboard · Tanzim's Virtual Bookshelf{% endblock %}
 
-            <!-- Main Content -->
+{% block admin_content %}
+<div class="page-head">
+  <h1>Welcome back, {{ username.title() }}</h1>
+  <a class="btn" href="{{ url_for('add_book') }}">+ Add book</a>
+</div>
 
-            <!-- Main Content -->
-            <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
-                <div class="row" id="card-row">
-                    <!-- Cards -->
-                    <!-- Total Number of Books Card -->
-                    <div class="col-md-4 mb-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">Number of Books</h5>
-                                <p class="card-text">{{ books|length }}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Total Number of Authors Card -->
-                    <div class="col-md-4 mb-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">Number of Authors</h5>
-                                <p class="card-text">{{ books|map(attribute='author_name')|unique|list|length }}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Total Number of Categories Card -->
-                    <div class="col-md-4 mb-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">Categories</h5>
-                                <p class="card-text">{{ books|map(attribute='genre')|unique|list|length }}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Total Number of Languages Card -->
-                    <div class="col-md-4 mb-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">Languages</h5>
-                                <p class="card-text">{{ books|map(attribute='language')|unique|list|length }}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Total Number of Read Books Card -->
-                    <div class="col-md-4 mb-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">Read Books</h5>
-                                <p class="card-text">{{ books|selectattr('read_unread', 'equalto', 'Yes')|list|length }}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Total Number of Unread Books Card -->
-                    <div class="col-md-4 mb-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">Unread Books</h5>
-                                <p class="card-text">{{ books|selectattr('read_unread', 'equalto', 'No')|list|length }}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Export Books Card -->
-                    <div class="col-md-4 mb-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">Export All Books</h5>
-                                <a class="btn btn-outline-success btn-sm" href="{{ url_for('export_csv') }}">CSV</a>
-                                <a class="btn btn-outline-success btn-sm" href="{{ url_for('export_xlsx') }}">Excel</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
-        </div>
+<div class="progress-wrap">
+  <p><span>Reading progress</span><span>{{ stats.read_percent }}% &middot; {{ '{:,}'.format(stats.pages) }} pages on the shelf</span></p>
+  <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ stats.read_percent }}" aria-label="Share of books read">
+    <i style="width: {{ stats.read_percent }}%"></i>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat"><b>{{ stats.books }}</b><span>Books</span></div>
+  <div class="stat"><b>{{ stats.authors }}</b><span>Authors</span></div>
+  <div class="stat"><b>{{ stats.genres }}</b><span>Genres</span></div>
+  <div class="stat"><b>{{ stats.languages }}</b><span>Languages</span></div>
+  <div class="stat"><b>{{ stats.read }}</b><span>Read</span></div>
+  <div class="stat"><b>{{ stats.unread }}</b><span>Not read yet</span></div>
+</div>
+
+<div class="card">
+  <h2>Export your library</h2>
+  <p class="muted">Download every book with its details to keep a backup or open it in a spreadsheet.</p>
+  <div class="form-actions">
+    <a class="btn quiet" href="{{ url_for('export_csv') }}">Download CSV</a>
+    <a class="btn quiet" href="{{ url_for('export_xlsx') }}">Download Excel</a>
+  </div>
+</div>
+
+<h2 class="section-title">Recently added</h2>
+<ul class="list">
+  {% for book in recent_books %}
+  <li>
+    {% if book.cover_src %}<img src="{{ book.cover_src }}" alt="" loading="lazy">{% else %}<span class="thumb"></span>{% endif %}
+    <div class="grow">
+      <a href="{{ url_for('book_review', id=book.id) }}">{{ book.title }}</a>
+      <small>{{ book.author_name }}</small>
     </div>
-
-    <!-- Footer -->
-    {% include "footer.html" %}
-
-</body>
-
-</html>
+    <a class="btn small quiet" href="{{ url_for('update_book_info', id=book.id) }}">Edit</a>
+  </li>
+  {% else %}
+  <li class="muted">No books yet. Add your first one!</li>
+  {% endfor %}
+</ul>
+{% endblock %}

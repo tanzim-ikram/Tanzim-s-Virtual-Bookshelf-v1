@@ -1,61 +1,47 @@
-{% include "dashboard_header.html" %}
+{% extends "admin_base.html" %}
+{% from "_macros.html" import delete_form %}
 
-    <!-- Sidebar -->
-    <div class="container-fluid">
-        <div class="row">
+{% block title %}Books · Tanzim's Virtual Bookshelf{% endblock %}
 
-            <!-- Sidebar Options -->
-            {% include "sidebar.html" %}
+{% block admin_content %}
+<div class="page-head">
+  <h1>Books <span class="muted">({{ books|length }})</span></h1>
+  <a class="btn" href="{{ url_for('add_book') }}">+ Add book</a>
+</div>
 
-            <!-- Main Content -->
+<div class="toolbar">
+  <input type="search" id="book-filter" placeholder="Filter by title or author…" aria-label="Filter books by title or author">
+</div>
 
-            <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4">
-                <div id="container-table" class="container mt-5">
-                    <h2 id="all-books-heading" class="mb-4">Update Books</h2>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th class="large-heading">Title</th>
-                                <th class="medium-heading">Author</th>
-                                <th class="medium-heading">Genre</th>
-                                <th class="small-heading">Language</th>
-                                <th class="small-heading">Pages</th>
-                                <th class="medium-heading">Read/Unread</th>
-                                <th class="small-heading">Review</th>
-                                <th class="small-heading">Actions</th>
-                                <!-- Add more headers as needed -->
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for book in books %}
-                            <tr>
-                                <td>{{ book.title }}</td>
-                                <td>{{ book.author_name }}</td>
-                                <td>{{ book.genre }}</td>
-                                <td>{{ book.language }}</td>
-                                <td>{{ book.page_num }}</td>
-                                <td>{{ book.read_unread }}</td>
-                                <td><a href="{{ url_for('book_review', id=book.id) }}">Read Review</a></td>
-                                <td>
-                                    <a id="update-btn" class="button" href="{{ url_for('update_book_info', id=book.id) }}">Update</a>
-                                    <br>
-                                    <form method="post" action="{{ url_for('delete_book', id=book.id) }}" class="delete-form"
-                                  onsubmit="return confirm({{ ('Delete ' ~ book.title ~ '?')|tojson }});">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="delete-button">Delete</button>
-                            </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </main>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Author</th>
+      <th>Language</th>
+      <th>Pages</th>
+      <th>Read?</th>
+      <th><span class="sr-only">Actions</span></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for book in books %}
+    <tr data-search="{{ (book.title ~ ' ' ~ book.author_name)|lower }}">
+      <td class="cell-title" data-label="Title">{{ book.title }}</td>
+      <td data-label="Author">{{ book.author_name }}</td>
+      <td data-label="Language">{{ book.language or '—' }}</td>
+      <td data-label="Pages">{{ book.page_num or '—' }}</td>
+      <td data-label="Read?">{% if book.read_unread == 'Yes' %}<span class="badge">Read</span>{% else %}<span class="badge off">Not yet</span>{% endif %}</td>
+      <td class="cell-actions">
+        <div class="row-actions">
+          <a class="btn small quiet" href="{{ url_for('book_review', id=book.id) }}">View</a>
+          <a class="btn small quiet" href="{{ url_for('update_book_info', id=book.id) }}">Edit</a>
+          {{ delete_form(book, 'delete_book') }}
         </div>
-    </div>
-    
-    <!-- Footer -->
-    {% include "footer.html" %}
-
-</body>
-</html>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<p class="empty" id="no-rows" hidden>No book matches that filter.</p>
+{% endblock %}

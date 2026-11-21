@@ -1,0 +1,86 @@
+{# Shared by Add book and Edit book.
+   Needs: form_action, submit_label, cancel_url, unique_genres.  Optional: book, selected_genres. #}
+{% set b = book if book is defined else none %}
+{% set chosen = selected_genres if selected_genres is defined else [] %}
+{% set lang = ('Bengali' if b.language == 'Bangla' else (b.language or '')) if b else '' %}
+
+<form class="card" id="book-form" method="post" action="{{ form_action }}" enctype="multipart/form-data" data-ajax>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div class="field">
+    <label for="title">Title <span class="req">*</span></label>
+    <input type="text" id="title" name="title" value="{{ b.title if b else '' }}" required maxlength="250">
+  </div>
+
+  <div class="field">
+    <label for="author_name">Author <span class="req">*</span></label>
+    <input type="text" id="author_name" name="author_name" value="{{ b.author_name if b else '' }}" required maxlength="250">
+  </div>
+
+  <div class="field">
+    <span class="label">Genres <span class="req">*</span></span>
+    <div class="pills">
+      {% for genre in unique_genres %}
+      <label class="pill">
+        <input type="checkbox" name="genre" value="{{ genre }}" {% if genre|lower in chosen %}checked{% endif %}>
+        <span>{{ genre }}</span>
+      </label>
+      {% endfor %}
+    </div>
+    <label class="hint" for="custom_genre">Not in the list? Add another genre:</label>
+    <input type="text" id="custom_genre" name="custom_genre" placeholder="e.g. Poetry" maxlength="100">
+  </div>
+
+  <div class="field">
+    <span class="label">Language <span class="req">*</span></span>
+    <div class="pills">
+      <label class="pill"><input type="radio" name="language" value="Bengali" required {% if lang == 'Bengali' %}checked{% endif %}><span>Bengali</span></label>
+      <label class="pill"><input type="radio" name="language" value="English" required {% if lang == 'English' %}checked{% endif %}><span>English</span></label>
+      <label class="pill"><input type="radio" name="language" value="Other" required {% if lang and lang not in ('Bengali', 'English') %}checked{% endif %}><span>Other</span></label>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="page_num">Pages <span class="req">*</span></label>
+    <input type="number" id="page_num" name="page_num" min="1" inputmode="numeric" value="{{ (b.page_num or '') if b else '' }}" required>
+  </div>
+
+  <div class="field">
+    <span class="label">Have you read it? <span class="req">*</span></span>
+    <div class="pills">
+      <label class="pill"><input type="radio" name="read_unread" value="Yes" required {% if b and b.read_unread == 'Yes' %}checked{% endif %}><span>Read</span></label>
+      <label class="pill"><input type="radio" name="read_unread" value="No" required {% if b and b.read_unread == 'No' %}checked{% endif %}><span>Not yet</span></label>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="review">Review</label>
+    <textarea id="review" name="review" maxlength="1000" placeholder="What did you think?">{{ b.review if b and b.review else '' }}</textarea>
+  </div>
+
+  <div class="field">
+    <label for="cover">Cover image</label>
+    <div class="cover-field">
+      <img id="cover-preview" class="cover-preview" alt="Cover preview"
+           {% if b and b.cover_src %}src="{{ b.cover_src }}"{% else %}hidden{% endif %}>
+      <div>
+        <input type="file" id="cover" name="cover" accept="image/jpeg,image/png,image/webp,image/gif" data-preview="cover-preview">
+        <p class="hint">JPG, PNG, WebP or GIF, up to 5 MB.{% if b %} Leave empty to keep the current cover.{% endif %}</p>
+      </div>
+    </div>
+  </div>
+
+  <details class="more">
+    <summary>More options</summary>
+    <div class="field">
+      <label for="img_url">Cover image link (used only if no file is uploaded)</label>
+      <input type="text" id="img_url" name="img_url" value="{{ b.img_url if b and b.img_url else '' }}" maxlength="250" inputmode="url">
+    </div>
+  </details>
+
+  <p class="form-status" role="status" aria-live="polite"></p>
+  <div class="form-actions">
+    <button type="submit" class="btn">{{ submit_label }}</button>
+    <a class="btn quiet" href="{{ cancel_url }}">Cancel</a>
+  </div>
+</form>

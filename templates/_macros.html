@@ -1,0 +1,8 @@
+{# POST-only delete button. The confirm text is read by app.js from data-confirm. #}
+{% macro delete_form(book, endpoint, label='Delete', cls='btn small danger') %}
+<form method="post" action="{{ url_for(endpoint, id=book.id) }}" class="inline"
+      data-confirm="Delete “{{ book.title }}”? This cannot be undone.">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button type="submit" class="{{ cls }}">{{ label }}</button>
+</form>
+{% endmacro %}

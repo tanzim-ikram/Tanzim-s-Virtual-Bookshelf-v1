@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="wrap admin">
+  <nav class="admin-nav" aria-label="Admin">
+    <a href="{{ url_for('dashboard') }}" {% if request.endpoint == 'dashboard' %}aria-current="page"{% endif %}>Dashboard</a>
+    <a href="{{ url_for('update_book') }}" {% if request.endpoint in ('update_book', 'update_book_info') %}aria-current="page"{% endif %}>Books</a>
+    <a href="{{ url_for('add_book') }}" {% if request.endpoint == 'add_book' %}aria-current="page"{% endif %}>Add book</a>
+    <a href="{{ url_for('change_password') }}" {% if request.endpoint == 'change_password' %}aria-current="page"{% endif %}>Password</a>
+  </nav>
+
+  <div class="admin-main">
+    {% block admin_content %}{% endblock %}
+  </div>
+</div>
+{% endblock %}
