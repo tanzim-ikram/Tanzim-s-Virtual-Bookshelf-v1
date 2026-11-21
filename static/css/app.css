@@ -444,3 +444,7 @@ details.more .field { margin: 10px 0 0; }
   position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
   overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
 }
+
+.export { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; }
+.toolbar .export { margin-left: auto; }
+.list + .export { margin-top: 20px; justify-content: flex-end; }

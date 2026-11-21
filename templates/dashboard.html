@@ -24,15 +24,6 @@
   <div class="stat"><b>{{ stats.unread }}</b><span>Not read yet</span></div>
 </div>
 
-<div class="card">
-  <h2>Export your library</h2>
-  <p class="muted">Download every book with its details to keep a backup or open it in a spreadsheet.</p>
-  <div class="form-actions">
-    <a class="btn quiet" href="{{ url_for('export_csv') }}">Download CSV</a>
-    <a class="btn quiet" href="{{ url_for('export_xlsx') }}">Download Excel</a>
-  </div>
-</div>
-
 <h2 class="section-title">Recently added</h2>
 <ul class="list">
   {% for book in recent_books %}
@@ -48,4 +39,6 @@
   <li class="muted">No books yet. Add your first one!</li>
   {% endfor %}
 </ul>
+
+{% include "_export.html" %}
 {% endblock %}

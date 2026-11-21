@@ -1,0 +1,6 @@
+{# Compact export links, shared by the dashboard and the books list. #}
+<div class="export">
+  <span class="muted">Export</span>
+  <a class="btn small quiet" href="{{ url_for('export_csv') }}">CSV</a>
+  <a class="btn small quiet" href="{{ url_for('export_xlsx') }}">Excel</a>
+</div>
