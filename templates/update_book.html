@@ -1,17 +1,19 @@
 {% extends "admin_base.html" %}
-{% from "_macros.html" import delete_form %}
+{% from "_macros.html" import delete_form, icon %}
 
 {% block title %}Books · Tanzim's Virtual Bookshelf{% endblock %}
 
 {% block admin_content %}
 <div class="page-head">
   <h1>Books <span class="muted">({{ books|length }})</span></h1>
-  <a class="btn" href="{{ url_for('add_book') }}">+ Add book</a>
+  <div class="head-actions">
+    {% include "_export.html" %}
+    <a class="btn" href="{{ url_for('add_book') }}">+ Add book</a>
+  </div>
 </div>
 
 <div class="toolbar">
   <input type="search" id="book-filter" placeholder="Filter by title or author…" aria-label="Filter books by title or author">
-  {% include "_export.html" %}
 </div>
 
 <table class="table">
@@ -32,12 +34,12 @@
       <td data-label="Author">{{ book.author_name }}</td>
       <td data-label="Language">{{ book.language or '—' }}</td>
       <td data-label="Pages">{{ book.page_num or '—' }}</td>
-      <td data-label="Read?">{% if book.read_unread == 'Yes' %}<span class="badge">Read</span>{% else %}<span class="badge off">Not yet</span>{% endif %}</td>
+      <td data-label="Read?"><span class="status {{ 'on' if book.read_unread == 'Yes' }}">{{ 'Read' if book.read_unread == 'Yes' else 'Not yet' }}</span></td>
       <td class="cell-actions">
         <div class="row-actions">
-          <a class="btn small quiet" href="{{ url_for('book_review', id=book.id) }}">View</a>
-          <a class="btn small quiet" href="{{ url_for('update_book_info', id=book.id) }}">Edit</a>
-          {{ delete_form(book, 'delete_book') }}
+          <a class="icon-btn" href="{{ url_for('book_review', id=book.id) }}" title="View" aria-label="View {{ book.title }}">{{ icon('eye') }}</a>
+          <a class="icon-btn" href="{{ url_for('update_book_info', id=book.id) }}" title="Edit" aria-label="Edit {{ book.title }}">{{ icon('edit') }}</a>
+          {{ delete_form(book, 'delete_book', icon_only=True) }}
         </div>
       </td>
     </tr>

@@ -228,13 +228,13 @@ form.inline { display: inline; margin: 0; }
   transform: rotateY(180deg);
   background: var(--surface); border: 1px solid var(--line);
   padding: 12px; display: flex; flex-direction: column; gap: 6px;
-  overflow-y: auto; text-align: left; font-size: 0.8rem; line-height: 1.4;
+  overflow-y: auto; text-align: center; align-items: center; font-size: 0.8rem; line-height: 1.4;
 }
-.back h3 { font-size: 0.95rem; margin: 0; padding-right: 22px; }
+.back h3 { font-size: 0.95rem; margin: 0; padding-inline: 22px; }
 .back .by { color: var(--muted); margin: 0; }
 .back .facts { color: var(--muted); margin: 0; }
 .back .genres { margin: 0; }
-.back .actions { margin-top: auto; display: flex; flex-wrap: wrap; gap: 6px; padding-top: 6px; }
+.back .actions { margin-top: auto; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; padding-top: 6px; }
 .flip-close {
   position: absolute; top: 4px; right: 4px; width: 32px; height: 32px;
   border: 0; border-radius: 50%; background: transparent; color: var(--muted);
@@ -251,7 +251,7 @@ form.inline { display: inline; margin: 0; }
   .flip-close { display: none; }
 }
 
-.meta { margin-top: 10px; }
+.meta { margin-top: 10px; text-align: center; }
 .meta h3 {
   font: 600 0.92rem/1.3 var(--font-body); margin: 0;
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden;
@@ -446,5 +446,22 @@ details.more .field { margin: 10px 0 0; }
 }
 
 .export { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; }
-.toolbar .export { margin-left: auto; }
-.list + .export { margin-top: 20px; justify-content: flex-end; }
+.head-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+
+/* Read / not read status: a dot and a label that never wraps */
+.status { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; font-size: 0.88rem; color: var(--muted); }
+.status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--muted); }
+.status.on { color: var(--accent); font-weight: 600; }
+.status.on::before { background: var(--accent); border-color: var(--accent); }
+
+/* Round icon buttons for row actions */
+.icon-btn {
+  display: inline-grid; place-items: center; width: 40px; height: 40px; padding: 0;
+  border-radius: 50%; border: 1px solid var(--line); background: transparent;
+  color: var(--muted); cursor: pointer;
+}
+.icon-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.icon-btn:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); text-decoration: none; }
+.icon-btn.danger:hover { color: var(--danger); border-color: var(--danger); background: var(--danger-soft); }
+.row-actions { flex-wrap: nowrap; }
+.table td { white-space: normal; }
