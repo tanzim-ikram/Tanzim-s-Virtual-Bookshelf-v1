@@ -465,3 +465,7 @@ details.more .field { margin: 10px 0 0; }
 .icon-btn.danger:hover { color: var(--danger); border-color: var(--danger); background: var(--danger-soft); }
 .row-actions { flex-wrap: nowrap; }
 .table td { white-space: normal; }
+
+/* Flip-side actions: one tidy row */
+.back .actions { flex-wrap: nowrap; align-items: center; }
+.back .actions .btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }

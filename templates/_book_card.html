@@ -1,4 +1,4 @@
-{% from "_macros.html" import delete_form %}
+{% from "_macros.html" import delete_form, icon %}
 {# One book on the shelf: the cover on the front, details on the back. Needs `book`. #}
 <article class="book" data-read="{{ (book.read_unread or '')|lower }}" data-lang="{{ (book.language or '')|lower }}">
   <div class="scene">
@@ -22,10 +22,12 @@
         </p>
         <p class="facts">{% if book.read_unread == 'Yes' %}<span class="badge">Read</span>{% else %}<span class="badge off">Not read yet</span>{% endif %}</p>
         <div class="actions">
-          <a class="btn small" href="{{ url_for('book_review', id=book.id) }}">Review</a>
           {% if current_user.is_authenticated %}
-          <a class="btn small quiet" href="{{ url_for('update_book_info', id=book.id) }}">Edit</a>
-          {{ delete_form(book, 'delete') }}
+          <a class="icon-btn" href="{{ url_for('book_review', id=book.id) }}" title="View review" aria-label="View review of {{ book.title }}">{{ icon('eye') }}</a>
+          <a class="icon-btn" href="{{ url_for('update_book_info', id=book.id) }}" title="Edit" aria-label="Edit {{ book.title }}">{{ icon('edit') }}</a>
+          {{ delete_form(book, 'delete', icon_only=True) }}
+          {% else %}
+          <a class="btn small" href="{{ url_for('book_review', id=book.id) }}">{{ icon('eye') }} Review</a>
           {% endif %}
         </div>
       </div>
